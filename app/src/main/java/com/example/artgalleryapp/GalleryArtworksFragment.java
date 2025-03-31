@@ -18,12 +18,12 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class GalleryArtworksFragment extends Fragment {
-    private Long galleryId; // Changed to Long
+    private Long galleryId;
     private RecyclerView recyclerView;
     private ProgressBar loadingIndicator;
     private ArtRepository repository = new ArtRepository();
 
-    public GalleryArtworksFragment(Long galleryId) { // Changed to Long
+    public GalleryArtworksFragment(Long galleryId) {
         this.galleryId = galleryId;
     }
 
@@ -34,7 +34,7 @@ public class GalleryArtworksFragment extends Fragment {
         loadingIndicator = view.findViewById(R.id.loading_indicator);
 
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
-        recyclerView.setAdapter(new ArtworkAdapter(new ArrayList<>(), artwork -> {}));
+        recyclerView.setAdapter(new ArtworkAdapter(new ArrayList<>(), artwork -> {}, getParentFragmentManager()));
 
         loadArtworks();
         return view;
@@ -52,7 +52,7 @@ public class GalleryArtworksFragment extends Fragment {
                     for (Artwork artwork : artworks) {
                         Log.d("GalleryArtworks", "Title: " + artwork.getTitle() + ", ImageUrl: " + artwork.getImageUrl());
                     }
-                    recyclerView.setAdapter(new ArtworkAdapter(artworks, artwork -> {}));
+                    recyclerView.setAdapter(new ArtworkAdapter(artworks, artwork -> {}, getParentFragmentManager()));
                 } else {
                     Toast.makeText(getContext(), "Error fetching artworks", Toast.LENGTH_SHORT).show();
                     Log.e("GalleryArtworks", "Response failed: " + response.code());

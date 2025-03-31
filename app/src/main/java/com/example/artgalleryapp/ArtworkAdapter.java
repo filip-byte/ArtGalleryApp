@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.squareup.picasso.Picasso;
 import com.example.artgalleryapp.R;
@@ -14,10 +15,12 @@ import java.util.List;
 public class ArtworkAdapter extends RecyclerView.Adapter<ArtworkAdapter.ViewHolder> {
     private List<Artwork> artworks;
     private OnAddClickListener addClickListener;
+    private FragmentManager fragmentManager;
 
-    public ArtworkAdapter(List<Artwork> artworks, OnAddClickListener listener) {
+    public ArtworkAdapter(List<Artwork> artworks, OnAddClickListener listener, FragmentManager fragmentManager) {
         this.artworks = artworks;
         this.addClickListener = listener;
+        this.fragmentManager = fragmentManager;
     }
 
     @Override
@@ -37,7 +40,21 @@ public class ArtworkAdapter extends RecyclerView.Adapter<ArtworkAdapter.ViewHold
         } else {
             holder.imageView.setImageResource(android.R.drawable.ic_menu_gallery);
         }
-        holder.addButton.setOnClickListener(v -> addClickListener.onAddClick(artwork));
+
+        holder.imageView.setOnClickListener(v -> {
+            if (fragmentManager != null) {
+                fragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, FullImageFragment.newInstance(imageUrl))
+                        .addToBackStack(null)
+                        .commit();
+            }
+        });
+
+        holder.addButton.setOnClickListener(v -> {
+            if (addClickListener != null) {
+                addClickListener.onAddClick(artwork);
+            }
+        });
     }
 
     @Override
@@ -58,7 +75,7 @@ public class ArtworkAdapter extends RecyclerView.Adapter<ArtworkAdapter.ViewHold
         }
     }
 
-    interface OnAddClickListener {
+    public interface OnAddClickListener {
         void onAddClick(Artwork artwork);
     }
 }

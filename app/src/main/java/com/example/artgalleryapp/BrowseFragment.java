@@ -52,7 +52,7 @@ public class BrowseFragment extends Fragment {
         sourceSpinner.setAdapter(adapter);
 
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
-        recyclerView.setAdapter(new ArtworkAdapter(new ArrayList<>(), this::showAddDialog));
+        recyclerView.setAdapter(new ArtworkAdapter(new ArrayList<>(), this::showAddDialog, getParentFragmentManager()));
 
         view.findViewById(R.id.search_button).setOnClickListener(v -> {
             currentPage = 1;
@@ -83,7 +83,7 @@ public class BrowseFragment extends Fragment {
                 loadingIndicator.setVisibility(View.GONE);
                 nextPageButton.setEnabled(true);
                 if (response.isSuccessful()) {
-                    recyclerView.setAdapter(new ArtworkAdapter(response.body(), BrowseFragment.this::showAddDialog));
+                    recyclerView.setAdapter(new ArtworkAdapter(response.body(), BrowseFragment.this::showAddDialog, getParentFragmentManager()));
                 } else {
                     Toast.makeText(getContext(), "Error fetching artworks", Toast.LENGTH_SHORT).show();
                 }
@@ -179,7 +179,7 @@ public class BrowseFragment extends Fragment {
         builder.show();
     }
 
-    private void addToGallery(Long galleryId, String imageUrl) { // Changed to Long
+    private void addToGallery(Long galleryId, String imageUrl) {
         repository.addArtworkToGallery(galleryId, imageUrl, new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
