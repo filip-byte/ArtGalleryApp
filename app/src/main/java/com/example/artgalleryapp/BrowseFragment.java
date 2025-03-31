@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -28,8 +27,12 @@ public class BrowseFragment extends Fragment {
     private EditText searchInput;
     private RecyclerView recyclerView;
     private ProgressBar loadingIndicator;
+    private Button nextPageButton;
     private ArtRepository repository = new ArtRepository();
     private List<Gallery> galleries;
+    private int currentPage = 1;
+    private String lastSource;
+    private String lastQuery;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -39,6 +42,7 @@ public class BrowseFragment extends Fragment {
         searchInput = view.findViewById(R.id.search_input);
         recyclerView = view.findViewById(R.id.artworks_recycler_view);
         loadingIndicator = view.findViewById(R.id.loading_indicator);
+        nextPageButton = view.findViewById(R.id.next_page_button);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
                 android.R.layout.simple_spinner_item, new String[]{"Artic", "MET"});
@@ -48,20 +52,34 @@ public class BrowseFragment extends Fragment {
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
         recyclerView.setAdapter(new ArtworkAdapter(new ArrayList<>(), this::showAddDialog));
 
-        view.findViewById(R.id.search_button).setOnClickListener(v -> searchArtworks());
+        view.findViewById(R.id.search_button).setOnClickListener(v -> {
+            currentPage = 1;
+            searchArtworks(currentPage);
+        });
+
+        nextPageButton.setOnClickListener(v -> {
+            currentPage++;
+            searchArtworks(currentPage);
+        });
+
         return view;
     }
 
-    private void searchArtworks() {
+    private void searchArtworks(int page) {
         String source = sourceSpinner.getSelectedItem().toString();
         String query = searchInput.getText().toString().trim();
         if (query.isEmpty()) return;
 
+        lastSource = source;
+        lastQuery = query;
+
         loadingIndicator.setVisibility(View.VISIBLE);
-        repository.searchArtworks(source, query, new Callback<List<Artwork>>() {
+        nextPageButton.setEnabled(false);
+        repository.searchArtworks(source, query, page, new Callback<List<Artwork>>() {
             @Override
             public void onResponse(Call<List<Artwork>> call, Response<List<Artwork>> response) {
                 loadingIndicator.setVisibility(View.GONE);
+                nextPageButton.setEnabled(true);
                 if (response.isSuccessful()) {
                     recyclerView.setAdapter(new ArtworkAdapter(response.body(), BrowseFragment.this::showAddDialog));
                 } else {
@@ -72,6 +90,7 @@ public class BrowseFragment extends Fragment {
             @Override
             public void onFailure(Call<List<Artwork>> call, Throwable t) {
                 loadingIndicator.setVisibility(View.GONE);
+                nextPageButton.setEnabled(true);
                 Toast.makeText(getContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });

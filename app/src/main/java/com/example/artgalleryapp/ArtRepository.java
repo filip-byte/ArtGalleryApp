@@ -8,8 +8,8 @@ import retrofit2.Callback;
 public class ArtRepository {
     private ApiService apiService = ApiClient.getApiService();
 
-    public void searchArtworks(String source, String query, Callback<List<Artwork>> callback) {
-        apiService.searchArtworks(source, query, 1, 6).enqueue(callback);
+    public void searchArtworks(String source, String query, int page, Callback<List<Artwork>> callback) {
+        apiService.searchArtworks(source, query, page, 6).enqueue(callback);
     }
 
     public void createGallery(Gallery gallery, Callback<Gallery> callback) {
