@@ -2,6 +2,7 @@ package com.example.artgalleryapp;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.artgalleryapp.R;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -120,16 +122,21 @@ public class BrowseFragment extends Fragment {
             public void onResponse(Call<List<Gallery>> call, Response<List<Gallery>> response) {
                 if (response.isSuccessful()) {
                     galleries = response.body();
+                    Log.d("BrowseFragment", "Fetched galleries: " + galleries.size());
                     List<String> galleryNames = galleries.stream().map(Gallery::getName).collect(Collectors.toList());
                     galleryNames.add(0, "Create New Gallery");
                     ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
                             android.R.layout.simple_spinner_item, galleryNames);
                     gallerySpinner.setAdapter(adapter);
+                } else {
+                    Log.e("BrowseFragment", "Failed to fetch galleries: " + response.code());
                 }
             }
 
             @Override
-            public void onFailure(Call<List<Gallery>> call, Throwable t) {}
+            public void onFailure(Call<List<Gallery>> call, Throwable t) {
+                Log.e("BrowseFragment", "Network error fetching galleries: " + t.getMessage());
+            }
         });
 
         builder.setPositiveButton("Add", (dialog, which) -> {
@@ -142,12 +149,20 @@ public class BrowseFragment extends Fragment {
                     @Override
                     public void onResponse(Call<Gallery> call, Response<Gallery> response) {
                         if (response.isSuccessful()) {
-                            addToGallery(response.body().getId(), artwork.getImageUrl());
+                            Gallery createdGallery = response.body();
+                            Log.d("BrowseFragment", "Gallery created: " + createdGallery.getName() + ", ID: " + createdGallery.getId());
+                            addToGallery(createdGallery.getId(), artwork.getImageUrl());
+                        } else {
+                            Log.e("BrowseFragment", "Failed to create gallery: " + response.code());
+                            Toast.makeText(getContext(), "Error creating gallery", Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
-                    public void onFailure(Call<Gallery> call, Throwable t) {}
+                    public void onFailure(Call<Gallery> call, Throwable t) {
+                        Log.e("BrowseFragment", "Network error creating gallery: " + t.getMessage());
+                        Toast.makeText(getContext(), "Error creating gallery: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
                 });
             } else {
                 Gallery selectedGallery = galleries.stream()
@@ -167,13 +182,18 @@ public class BrowseFragment extends Fragment {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
+                    Log.d("BrowseFragment", "Artwork added to gallery ID: " + galleryId);
                     Toast.makeText(getContext(), "Artwork added!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.e("BrowseFragment", "Failed to add artwork: " + response.code());
+                    Toast.makeText(getContext(), "Error adding artwork", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
-                Toast.makeText(getContext(), "Error adding artwork", Toast.LENGTH_SHORT).show();
+                Log.e("BrowseFragment", "Network error adding artwork: " + t.getMessage());
+                Toast.makeText(getContext(), "Error adding artwork: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
