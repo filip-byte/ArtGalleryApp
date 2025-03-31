@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 import com.squareup.picasso.Picasso;
+import com.example.artgalleryapp.R;
 import java.util.List;
 
 public class ArtworkAdapter extends RecyclerView.Adapter<ArtworkAdapter.ViewHolder> {
@@ -30,7 +31,12 @@ public class ArtworkAdapter extends RecyclerView.Adapter<ArtworkAdapter.ViewHold
     public void onBindViewHolder(ViewHolder holder, int position) {
         Artwork artwork = artworks.get(position);
         holder.titleTextView.setText(artwork.getTitle());
-        Picasso.get().load(artwork.getImageUrl()).into(holder.imageView);
+        String imageUrl = artwork.getImageUrl();
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Picasso.get().load(imageUrl).into(holder.imageView);
+        } else {
+            holder.imageView.setImageResource(android.R.drawable.ic_menu_gallery);
+        }
         holder.addButton.setOnClickListener(v -> addClickListener.onAddClick(artwork));
     }
 
