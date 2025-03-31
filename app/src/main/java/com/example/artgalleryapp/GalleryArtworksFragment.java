@@ -1,6 +1,7 @@
 package com.example.artgalleryapp;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +10,7 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.artgalleryapp.R;
 import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
@@ -16,12 +18,12 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class GalleryArtworksFragment extends Fragment {
-    private String galleryId;
+    private Long galleryId; // Changed to Long
     private RecyclerView recyclerView;
     private ProgressBar loadingIndicator;
     private ArtRepository repository = new ArtRepository();
 
-    public GalleryArtworksFragment(String galleryId) {
+    public GalleryArtworksFragment(Long galleryId) { // Changed to Long
         this.galleryId = galleryId;
     }
 
@@ -45,9 +47,15 @@ public class GalleryArtworksFragment extends Fragment {
             public void onResponse(Call<List<Artwork>> call, Response<List<Artwork>> response) {
                 loadingIndicator.setVisibility(View.GONE);
                 if (response.isSuccessful()) {
-                    recyclerView.setAdapter(new ArtworkAdapter(response.body(), artwork -> {}));
+                    List<Artwork> artworks = response.body();
+                    Log.d("GalleryArtworks", "Gallery ID: " + galleryId + ", Artworks: " + artworks.size());
+                    for (Artwork artwork : artworks) {
+                        Log.d("GalleryArtworks", "Title: " + artwork.getTitle() + ", ImageUrl: " + artwork.getImageUrl());
+                    }
+                    recyclerView.setAdapter(new ArtworkAdapter(artworks, artwork -> {}));
                 } else {
                     Toast.makeText(getContext(), "Error fetching artworks", Toast.LENGTH_SHORT).show();
+                    Log.e("GalleryArtworks", "Response failed: " + response.code());
                 }
             }
 
@@ -55,6 +63,7 @@ public class GalleryArtworksFragment extends Fragment {
             public void onFailure(Call<List<Artwork>> call, Throwable t) {
                 loadingIndicator.setVisibility(View.GONE);
                 Toast.makeText(getContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e("GalleryArtworks", "Network error: " + t.getMessage());
             }
         });
     }

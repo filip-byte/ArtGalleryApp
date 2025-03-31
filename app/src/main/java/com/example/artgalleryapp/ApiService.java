@@ -19,17 +19,20 @@ public interface ApiService {
     );
 
     @POST("/api/artworks/galleries")
-    Call<Gallery> createGallery(@Body Gallery gallery);
+    Call<Gallery> createGallery(
+            @Query("name") String name,
+            @Query("description") String description
+    );
 
     @POST("/api/artworks/galleries/{id}/artworks")
     Call<Void> addArtworkToGallery(
-            @Path("id") String galleryId,
-            @Body Map<String, String> artworkData
+            @Path("id") Long id,
+            @Query("imageUrl") String imageUrl
     );
 
     @GET("/api/artworks/galleries")
     Call<List<Gallery>> getGalleries();
 
     @GET("/api/artworks/galleries/{id}")
-    Call<List<Artwork>> getGalleryArtworks(@Path("id") String id);
+    Call<List<Artwork>> getGalleryArtworks(@Path("id") Long id);
 }

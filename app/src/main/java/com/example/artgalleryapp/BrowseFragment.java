@@ -144,7 +144,9 @@ public class BrowseFragment extends Fragment {
             if ("Create New Gallery".equals(selected)) {
                 String name = nameInput.getText().toString().trim();
                 if (name.isEmpty()) return;
-                Gallery newGallery = new Gallery(null, name, descInput.getText().toString().trim());
+                String description = descInput.getText().toString().trim();
+                Gallery newGallery = new Gallery(null, name, description);
+                Log.d("BrowseFragment", "Creating gallery: " + newGallery.getName() + ", Desc: " + newGallery.getDescription());
                 repository.createGallery(newGallery, new Callback<Gallery>() {
                     @Override
                     public void onResponse(Call<Gallery> call, Response<Gallery> response) {
@@ -153,7 +155,7 @@ public class BrowseFragment extends Fragment {
                             Log.d("BrowseFragment", "Gallery created: " + createdGallery.getName() + ", ID: " + createdGallery.getId());
                             addToGallery(createdGallery.getId(), artwork.getImageUrl());
                         } else {
-                            Log.e("BrowseFragment", "Failed to create gallery: " + response.code());
+                            Log.e("BrowseFragment", "Failed to create gallery: " + response.code() + ", Body: " + response.errorBody());
                             Toast.makeText(getContext(), "Error creating gallery", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -177,7 +179,7 @@ public class BrowseFragment extends Fragment {
         builder.show();
     }
 
-    private void addToGallery(String galleryId, String imageUrl) {
+    private void addToGallery(Long galleryId, String imageUrl) { // Changed to Long
         repository.addArtworkToGallery(galleryId, imageUrl, new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {

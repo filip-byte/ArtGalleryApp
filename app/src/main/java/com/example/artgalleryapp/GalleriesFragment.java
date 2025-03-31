@@ -1,12 +1,14 @@
 package com.example.artgalleryapp;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.artgalleryapp.R;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -30,17 +32,22 @@ public class GalleriesFragment extends Fragment {
             @Override
             public void onResponse(Call<List<Gallery>> call, Response<List<Gallery>> response) {
                 if (response.isSuccessful()) {
+                    Log.d("GalleriesFragment", "Fetched galleries: " + response.body().size());
                     recyclerView.setAdapter(new GalleryAdapter(response.body(), gallery -> {
                         getParentFragmentManager().beginTransaction()
                                 .replace(R.id.fragment_container, new GalleryArtworksFragment(gallery.getId()))
                                 .addToBackStack(null)
                                 .commit();
                     }));
+                } else {
+                    Log.e("GalleriesFragment", "Failed to fetch galleries: " + response.code());
                 }
             }
 
             @Override
-            public void onFailure(Call<List<Gallery>> call, Throwable t) {}
+            public void onFailure(Call<List<Gallery>> call, Throwable t) {
+                Log.e("GalleriesFragment", "Network error: " + t.getMessage());
+            }
         });
     }
 }
